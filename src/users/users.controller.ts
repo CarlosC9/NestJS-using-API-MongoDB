@@ -1,26 +1,54 @@
-import { Controller, Post, Body, Get, Param } from '@nestjs/common';
+import { Controller, Post, Body, Get, Param, HttpException, HttpStatus } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UsersService } from './users.service';
+import { UserException } from './user.exception';
+import * as mongoose from 'mongoose';
 
 @Controller('users')
 export class UsersController {
+ 
 
-    constructor(private readonly catsService: UsersService) {}
+    constructor(private readonly userService: UsersService) {}
 
     @Post()
-    create(@Body() user : CreateUserDto) {
-        
-        this.catsService.create(user);
+    async create(@Body() user : CreateUserDto) {
+        let exception : number = 0;
+
+        await this.userService.create(user).catch( (reason) => {
+            if (reason instanceof UserException) {
+                exception = reason.type;
+            }
+        });
+
+        switch (exception) {
+            case UserException.NICKNAME_EXIST_EXCEPTION:
+                throw new HttpException('Nickname already exist', HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
     }
 
     @Get()
-    getAll() {
-        return this.catsService.findAll();
+    async getAll() {
+        return this.userService.findAll();
     }
 
     @Get(':id')
-    getOne(@Param('id') id : string) {
-        return this.catsService.findOne(id);
+    async getOne(@Param('id') id : string) {
+        let exception = 0;
+
+        let user = await this.userService.findOne(id).catch((reason) => {
+            if (reason instanceof mongoose.Error.CastError) {
+                exception = UserException.CANT_CAST_ID;
+            }
+            console.log(reason);
+        });
+
+        switch (exception) {
+            case UserException.CANT_CAST_ID:
+                throw new HttpException('Bad Request', HttpStatus.BAD_REQUEST);
+        }
+
+        return user;
     }
 
 }

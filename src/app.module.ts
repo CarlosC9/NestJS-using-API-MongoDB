@@ -6,7 +6,11 @@ import { DiagramsModule } from './diagrams/diagrams.module';
 import { UsersModule } from './users/users.module';
 
 @Module({
-  imports: [MongooseModule.forRoot('mongodb://localhost/diagramEditorDB'), DiagramsModule, UsersModule],
+  imports: [MongooseModule.forRootAsync({
+    useFactory: () => ({
+      uri: 'mongodb://localhost/diagramEditorDB'
+    }),
+  }), DiagramsModule, UsersModule],
   controllers: [AppController],
   providers: [AppService],
 })
