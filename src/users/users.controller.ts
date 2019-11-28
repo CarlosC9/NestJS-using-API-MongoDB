@@ -32,23 +32,23 @@ export class UsersController {
         return this.userService.findAll();
     }
 
-    @Get(':id')
-    async getOne(@Param('id') id : string) {
-        let exception = 0;
+    // @Get(':id')
+    // async getOne(@Param('id') id : string) {
+    //     let exception = 0;
 
-        let user = await this.userService.findOne(id).catch((reason) => {
-            if (reason instanceof mongoose.Error.CastError) {
-                exception = UserException.CANT_CAST_ID;
-            }
-            console.log(reason);
-        });
+    //     let user = await this.userService.findOne(id).catch((reason) => {
+    //         if (reason instanceof mongoose.Error.CastError) {
+    //             exception = UserException.CANT_CAST_ID;
+    //         }
+    //         console.log(reason);
+    //     });
 
-        switch (exception) {
-            case UserException.CANT_CAST_ID:
-                throw new HttpException('Bad Request', HttpStatus.BAD_REQUEST);
-        }
+    //     switch (exception) {
+    //         case UserException.CANT_CAST_ID:
+    //             throw new HttpException('Bad Request', HttpStatus.BAD_REQUEST);
+    //     }
 
-        return user;
-    }
+    //     return user;
+    // }
 
 }

@@ -10,7 +10,7 @@ export class UsersService {
     constructor(@InjectModel('users') private readonly userModel: Model<User>) {}
 
     async create(createUserDto: CreateUserDto): Promise<User> {
-        let users : [User] = await this.userModel.find({nickname : createUserDto.nickname});
+        let users : [User] = await this.userModel.find({nickname : createUserDto.username});
 
         if (users.length > 0) {
             throw new UserException(UserException.NICKNAME_EXIST_EXCEPTION);
@@ -24,7 +24,7 @@ export class UsersService {
         return await this.userModel.find().exec();
     }
 
-    async findOne(id : string) : Promise<User> {
-        return await this.userModel.findById(id).exec();
+    async findOneByUsername(username : string) : Promise<User> {
+        return await this.userModel.findOne({ username: username }).exec();
     }
 }
