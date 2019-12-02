@@ -1,8 +1,8 @@
-import { Controller, Post, Body, Get, Param, HttpException, HttpStatus } from '@nestjs/common';
+import { Controller, Post, Body, Get, Param, HttpException, HttpStatus, UseGuards, Request } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UsersService } from './users.service';
 import { UserException } from './user.exception';
-import * as mongoose from 'mongoose';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('users')
 export class UsersController {
@@ -27,9 +27,10 @@ export class UsersController {
 
     }
 
-    @Get()
-    async getAll() {
-        return this.userService.findAll();
+    @UseGuards(AuthGuard('jwt'))
+    @Get('profile')
+    getProfile(@Request() req) {
+        return req.user;
     }
 
     // @Get(':id')
