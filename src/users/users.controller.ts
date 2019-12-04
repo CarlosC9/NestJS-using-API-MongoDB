@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, Param, HttpException, HttpStatus, UseGuards, Request } from '@nestjs/common';
+import { Controller, Post, Body, Get, HttpException, HttpStatus, UseGuards, Request } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UsersService } from './users.service';
 import { UserException } from './user.exception';
@@ -14,6 +14,12 @@ export class UsersController {
     async create(@Body() user : CreateUserDto) {
         let exception : number = 0;
 
+        user.username = user.username.toLocaleLowerCase();
+
+        if (user.username == "" || user.password == "") {
+            throw new HttpException('Username or password is empty' , HttpStatus.BAD_REQUEST);
+        }
+
         await this.userService.create(user).catch( (reason) => {
             if (reason instanceof UserException) {
                 exception = reason.type;
@@ -21,8 +27,8 @@ export class UsersController {
         });
 
         switch (exception) {
-            case UserException.NICKNAME_EXIST_EXCEPTION:
-                throw new HttpException('Nickname already exist', HttpStatus.INTERNAL_SERVER_ERROR);
+            case UserException.USERNAME_EXIST_EXCEPTION:
+                throw new HttpException('Username already exist', HttpStatus.BAD_REQUEST);
         }
 
     }
