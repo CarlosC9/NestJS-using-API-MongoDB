@@ -5,18 +5,19 @@ import { Model } from 'mongoose';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UserException } from './user.exception';
 
+
+
 @Injectable()
 export class UsersService {
     constructor(@InjectModel('users') private readonly userModel: Model<User>) {}
 
     async create(createUserDto: CreateUserDto): Promise<User> {
         let users : [User] = await this.userModel.find({username : createUserDto.username});
-        console.log(users);
 
         if (users.length > 0) {
             throw new UserException(UserException.USERNAME_EXIST_EXCEPTION);
         }
-
+        
         const createdUser = new this.userModel(createUserDto);
         return await createdUser.save();
     }

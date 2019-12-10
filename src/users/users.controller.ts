@@ -4,6 +4,8 @@ import { UsersService } from './users.service';
 import { UserException } from './user.exception';
 import { AuthGuard } from '@nestjs/passport';
 
+const bcrypt = require('bcrypt');
+
 @Controller('users')
 export class UsersController {
  
@@ -20,11 +22,22 @@ export class UsersController {
             throw new HttpException('Username or password is empty' , HttpStatus.BAD_REQUEST);
         }
 
-        await this.userService.create(user).catch( (reason) => {
-            if (reason instanceof UserException) {
-                exception = reason.type;
-            }
-        });
+        let funHash =  async (err,hash) => {
+            user.password = hash;
+            await this.userService.create(user).catch( (reason) => {
+                if (reason instanceof UserException) {
+                    exception = reason.type;
+                }
+            });
+        }
+
+        await bcrypt.hash(user.password, 10, funHash.bind(this));
+
+        // await this.userService.create(user).catch( (reason) => {
+        //     if (reason instanceof UserException) {
+        //         exception = reason.type;
+        //     }
+        // });
 
         switch (exception) {
             case UserException.USERNAME_EXIST_EXCEPTION:
@@ -38,24 +51,5 @@ export class UsersController {
     getProfile(@Request() req) {
         return req.user;
     }
-
-    // @Get(':id')
-    // async getOne(@Param('id') id : string) {
-    //     let exception = 0;
-
-    //     let user = await this.userService.findOne(id).catch((reason) => {
-    //         if (reason instanceof mongoose.Error.CastError) {
-    //             exception = UserException.CANT_CAST_ID;
-    //         }
-    //         console.log(reason);
-    //     });
-
-    //     switch (exception) {
-    //         case UserException.CANT_CAST_ID:
-    //             throw new HttpException('Bad Request', HttpStatus.BAD_REQUEST);
-    //     }
-
-    //     return user;
-    // }
 
 }
