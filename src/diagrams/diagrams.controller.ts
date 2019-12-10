@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards, Request, Post, Body, Param, HttpException, HttpStatus, Put } from '@nestjs/common';
+import { Controller, Get, UseGuards, Request, Post, Body, Param, HttpException, HttpStatus, Put, Delete } from '@nestjs/common';
 import { DiagramsService } from './diagrams.service';
 import { AuthGuard } from '@nestjs/passport';
 import { CreateDiagramDto } from './dto/create-diagram.dto';
@@ -124,4 +124,40 @@ export class DiagramsController {
 
         await this.diagramService.updateDiagram(id,diagramReceived);
     }
+
+    @UseGuards(AuthGuard('jwt'))
+    @Delete(':id')
+    async deleteDiagram(@Request() req, @Param('id') id) {
+        let exception = 0;
+
+        let diagram: any = await this.diagramService.getById(id).catch((reason) => {
+            if (reason instanceof mongoose.Error.CastError) {
+                exception = DiagramException.CANT_CAST_ID;
+            }
+        });
+
+        if (diagram == null) {
+            throw new HttpException('NOT FOUND:DIAGRAM WITH ID(' + id + ') DOES NOT EXIST'
+                , HttpStatus.NOT_FOUND);
+        }
+
+        if (exception == DiagramException.CANT_CAST_ID) {
+            throw new HttpException('BAD REQUEST: INVALID ID', HttpStatus.BAD_REQUEST); 
+        }
+
+        if (diagram.ownerId != req.user.userId) {
+            let collaboratorFound = false;
+            for (let i = 0; i < diagram.projectsCollaboratorsId.length; i++) {
+                if (diagram.projectsCollaboratorsId[i] == req.user.userId) {
+                    collaboratorFound = true;
+                }
+            }
+            if (!collaboratorFound) {
+                throw new HttpException('UNAUTHORIZED', HttpStatus.UNAUTHORIZED);
+            }
+        }
+
+        await this.diagramService.deleteDiagram(id);
+    }
+
 }

@@ -21,7 +21,6 @@ export class DiagramsService {
 
     async createDiagram(createDiagramDto : CreateDiagramDto) {
         createDiagramDto.ownerId = new ObjectId(createDiagramDto.ownerId) ;
-        console.log(createDiagramDto);
         createDiagramDto.diagram = JSON.parse('{"mxGraphModel":{"root":{"mxCell":[{"_attributes":{"id":"0"}},{"_attributes":{"id":"1","parent":"0"}}]}}}');
         const createdDiagram = new this.diagramModel(createDiagramDto);
 
@@ -36,5 +35,11 @@ export class DiagramsService {
         let res = await this.diagramModel.updateOne({ _id: new ObjectId(id) }, 
         { diagram: diagram });
         return res.n;
+    }
+
+    async deleteDiagram(id: string) {
+        this.diagramModel.deleteOne({ _id: new ObjectId(id) }, function (err) {
+
+        });
     }
 }

@@ -4,7 +4,7 @@ import { UsersService } from './users.service';
 import { UserException } from './user.exception';
 import { AuthGuard } from '@nestjs/passport';
 
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 
 @Controller('users')
 export class UsersController {
