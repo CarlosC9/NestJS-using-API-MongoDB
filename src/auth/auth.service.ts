@@ -21,11 +21,6 @@ export class AuthService {
         }
 
         return null;
-
-        // if (user && user.password === password) {
-        //     const { password, ...result } = user;
-        //     return result;
-        // }
     }
 
     async login(user: any) {

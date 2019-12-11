@@ -4,11 +4,15 @@ import { AuthGuard } from '@nestjs/passport';
 import { CreateDiagramDto } from './dto/create-diagram.dto';
 import * as mongoose from 'mongoose';
 import { DiagramException } from './diagram.exception';
+import { UsersService } from '../users/users.service';
 
 @Controller('diagrams')
 export class DiagramsController {
 
-    constructor(private readonly diagramService: DiagramsService) { }
+    constructor(
+        private readonly diagramService: DiagramsService,
+        private readonly userService : UsersService,
+        ) { }
 
     @UseGuards(AuthGuard('jwt'))
     @Get("/my-diagrams")
@@ -59,6 +63,7 @@ export class DiagramsController {
     @Get(':id')
     async getDiagramById(@Request() req, @Param('id') id) {
         let exception = 0;
+        let userId: string = req.user.userId;
 
         let diagram: any = await this.diagramService.getById(id).catch((reason) => {
             if (reason instanceof mongoose.Error.CastError) {
@@ -75,10 +80,10 @@ export class DiagramsController {
             throw new HttpException('BAD REQUEST: INVALID ID', HttpStatus.BAD_REQUEST); 
         }
 
-        if (diagram.ownerId != req.user.userId) {
+        if (diagram.ownerId != userId) {
             let collaboratorFound = false;
             for (let i = 0; i < diagram.projectsCollaboratorsId.length; i++) {
-                if (diagram.projectsCollaboratorsId[i] == req.user.userId) {
+                if (diagram.projectsCollaboratorsId[i] == userId) {
                     collaboratorFound = true;
                 }
             }
@@ -87,7 +92,13 @@ export class DiagramsController {
             }
         }
 
-        return diagram.diagram;
+        let colors = await this.userService.getColors(userId);
+
+        return {
+            diagram : diagram.diagram,
+            colorParentType : colors.parentType,
+            colorScaleChage : colors.scaleChange,
+        };
     }
 
     @UseGuards(AuthGuard('jwt'))

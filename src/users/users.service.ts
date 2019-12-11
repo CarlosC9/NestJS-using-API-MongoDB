@@ -5,7 +5,7 @@ import { Model } from 'mongoose';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UserException } from './user.exception';
 
-
+const ObjectId = require('mongoose').Types.ObjectId;
 
 @Injectable()
 export class UsersService {
@@ -17,7 +17,8 @@ export class UsersService {
         if (users.length > 0) {
             throw new UserException(UserException.USERNAME_EXIST_EXCEPTION);
         }
-        
+        createUserDto.colorParentType = "#000000";
+        createUserDto.colorScaleChange = "#05FF23";
         const createdUser = new this.userModel(createUserDto);
         return await createdUser.save();
     }
@@ -28,5 +29,20 @@ export class UsersService {
 
     async findOneByUsername(username : string) : Promise<User> {
         return await this.userModel.findOne({ username: username }).exec();
+    }
+
+    async getColors(userId : String) {
+        let user : User = await this.userModel.findOne({ _id: new ObjectId(userId) }).exec();
+        let colors = {
+            parentType : user.colorParentType,
+            scaleChange : user.colorScaleChange,
+        }
+        return colors;
+    }
+
+    async updateConfigurate(userId,configurate) {
+        let res = await this.userModel.updateOne({ _id: new ObjectId(userId)},
+            configurate);
+        return res.n;
     }
 }

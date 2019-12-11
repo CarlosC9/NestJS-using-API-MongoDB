@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, HttpException, HttpStatus, UseGuards, Request } from '@nestjs/common';
+import { Controller, Post, Body, Get, HttpException, HttpStatus, UseGuards, Request, Put } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UsersService } from './users.service';
 import { UserException } from './user.exception';
@@ -33,12 +33,6 @@ export class UsersController {
 
         await bcrypt.hash(user.password, 10, funHash.bind(this));
 
-        // await this.userService.create(user).catch( (reason) => {
-        //     if (reason instanceof UserException) {
-        //         exception = reason.type;
-        //     }
-        // });
-
         switch (exception) {
             case UserException.USERNAME_EXIST_EXCEPTION:
                 throw new HttpException('Username already exist', HttpStatus.BAD_REQUEST);
@@ -48,8 +42,27 @@ export class UsersController {
 
     @UseGuards(AuthGuard('jwt'))
     @Get('profile')
-    getProfile(@Request() req) {
+    async getProfile(@Request() req) {
         return req.user;
+    }
+
+    @UseGuards(AuthGuard('jwt'))
+    @Get('user-configuration')
+    async getUserConfiguration(@Request() req) {
+        let userId: string = req.user.userId;
+        let colors = await this.userService.getColors(userId);
+
+        return {
+            colorParentType: colors.parentType,
+            colorScaleChange: colors.scaleChange,
+        }
+    }
+    
+    @UseGuards(AuthGuard('jwt'))
+    @Put('user-configuration')
+    async updateUserConfiguration(@Request() req, @Body() configurate) {
+        let userId: string = req.user.userId;
+        this.userService.updateConfigurate(userId,configurate);
     }
 
 }
