@@ -42,4 +42,9 @@ export class DiagramsService {
 
         });
     }
+
+    async addCollaborator(id, collaboratorId) {
+        let res = await this.diagramModel.updateOne({ _id: new ObjectId(id) },
+        { $push: {projectsCollaboratorsId : new ObjectId(collaboratorId) }});
+    }
 }

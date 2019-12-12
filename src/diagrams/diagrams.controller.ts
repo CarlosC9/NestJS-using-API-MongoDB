@@ -51,6 +51,50 @@ export class DiagramsController {
     }
 
     @UseGuards(AuthGuard('jwt'))
+    @Put(":id/add-collaboration")
+    async addCollaboration(@Request() req, @Param('id') id, @Body("username") username) {
+        let exception = 0;
+        let userId: string = req.user.userId;
+
+        let diagram: any = await this.diagramService.getById(id).catch((reason) => {
+            if (reason instanceof mongoose.Error.CastError) {
+                exception = DiagramException.CANT_CAST_ID;
+            }
+        });
+
+        if (diagram == null) {
+            throw new HttpException('NOT FOUND:DIAGRAM WITH ID(' + id + ') DOES NOT EXIST'
+                , HttpStatus.NOT_FOUND);
+        }
+
+        if (exception == DiagramException.CANT_CAST_ID) {
+            throw new HttpException('BAD REQUEST: INVALID ID', HttpStatus.BAD_REQUEST); 
+        }
+        
+        if (diagram.ownerId != userId) {
+            let collaboratorFound = false;
+            for (let i = 0; i < diagram.projectsCollaboratorsId.length; i++) {
+                if (diagram.projectsCollaboratorsId[i] == userId) {
+                    collaboratorFound = true;
+                }
+            }
+            if (!collaboratorFound) {
+                throw new HttpException('UNAUTHORIZED', HttpStatus.UNAUTHORIZED);
+            }
+        }
+
+        let user : any = await this.userService.findOneByUsername(username);
+
+
+        if (user == null) {
+            throw new HttpException('User with username(' + username + ') does not exists'
+                , HttpStatus.NOT_FOUND);
+        }
+
+        this.diagramService.addCollaborator(id,user._id);
+    }
+
+    @UseGuards(AuthGuard('jwt'))
     @Post()
     async createDiagram(@Request() req, @Body() createDiagramDto: CreateDiagramDto) {
         let userId: string = req.user.userId;
