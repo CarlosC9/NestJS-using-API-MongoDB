@@ -19,8 +19,14 @@ export class UsersController {
         user.username = user.username.toLocaleLowerCase();
 
         if (user.username == "" || user.password == "") {
-            throw new HttpException('Username or password is empty' , HttpStatus.BAD_REQUEST);
+            throw new HttpException('username or password is empty' , HttpStatus.BAD_REQUEST);
         }
+
+        let userSameUsername = await this.userService.findOneByUsername(user.username);
+        console.log(userSameUsername);
+
+        if (userSameUsername != null)
+        throw new HttpException('Username already',HttpStatus.BAD_REQUEST);
 
         let funHash =  async (err,hash) => {
             user.password = hash;
@@ -32,11 +38,6 @@ export class UsersController {
         }
 
         await bcrypt.hash(user.password, 10, funHash.bind(this));
-
-        switch (exception) {
-            case UserException.USERNAME_EXIST_EXCEPTION:
-                throw new HttpException('Username already exist', HttpStatus.BAD_REQUEST);
-        }
 
     }
 
