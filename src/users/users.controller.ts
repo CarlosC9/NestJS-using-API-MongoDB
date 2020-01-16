@@ -1,10 +1,11 @@
-import { Controller, Post, Body, Get, HttpException, HttpStatus, UseGuards, Request, Put } from '@nestjs/common';
+import { Controller, Post, Body, Get, HttpException, HttpStatus, UseGuards, Request, Put, Response } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UsersService } from './users.service';
 import { UserException } from './user.exception';
 import { AuthGuard } from '@nestjs/passport';
 
 const bcrypt = require('bcryptjs');
+const request = require('request');
 
 @Controller('users')
 export class UsersController {
@@ -64,6 +65,23 @@ export class UsersController {
     async updateUserConfiguration(@Request() req, @Body() configurate) {
         let userId: string = req.user.userId;
         this.userService.updateConfigurate(userId,configurate);
+    }
+
+    @Get('reportColor')
+    async getReportColor(@Response() res) {
+        let colorReport = await this.userService.getColorReport();
+        var data = {
+            template: { 'shortid': 'SyemgFj2xU'},
+            data: colorReport
+        }
+
+        var options = {
+            uri:'http://localhost:5488/api/report',
+            method: 'POST',
+            json: data
+        }
+
+        request(options).pipe(res);
     }
 
 }
