@@ -24,7 +24,6 @@ export class UsersController {
         }
 
         let userSameUsername = await this.userService.findOneByUsername(user.username);
-        console.log(userSameUsername);
 
         if (userSameUsername != null)
         throw new HttpException('Username already',HttpStatus.BAD_REQUEST);

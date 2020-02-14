@@ -49,18 +49,12 @@ export class UsersService {
     async getColorReport() {
 
         let countBlack = await this.userModel.find({colorParentType : "#000000"}).count();
-        console.log("number black: " + countBlack);
         let countPink = await this.userModel.find({colorParentType: "#ff00f2"}).count();
-        console.log("number pink: " + countPink);
         let countOrange = await this.userModel.find({colorParentType: "#ff7b00"}).count();
-        console.log("number orange: " + countOrange);
 
         let countGreen = await this.userModel.find({colorScaleChange: "#05FF23"}).count();
-        console.log("number green: " + countGreen);
         let countBlue = await this.userModel.find({colorScaleChange: "#003cff"}).count();
-        console.log("number blue: " + countBlue);
         let countRed = await this.userModel.find({colorScaleChange: "#ff0000"}).count();
-        console.log("number red: " + countRed);
 
         let colorReport = {
             parentType: {
